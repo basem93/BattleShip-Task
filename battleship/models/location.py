@@ -11,9 +11,10 @@ class BoardLocationModel(db.Model):
 
     ship_id = db.Column(db.Integer, db.ForeignKey('ships.id'))
 
-    def __init__(self, location_x, location_y):
+    def __init__(self, location_x, location_y, ship_id):
         self.location_x = location_x
         self.location_y = location_y
+        self.ship_id = ship_id
 
     def save_to_db(self):
         db.session.add(self)
@@ -21,6 +22,9 @@ class BoardLocationModel(db.Model):
 
     def delete_from_db(self):
         db.session.delete(self)
+        db.session.commit()
+
+    def update_to_db(self):
         db.session.commit()
 
     def get_co_ordinates(self):

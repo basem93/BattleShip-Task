@@ -18,27 +18,32 @@ class StartGameHandler:
             _ship = ShipModel(name="ship_", origin_x=ship['y'], origin_y=ship['y'],
                               size=ship['size'], orientation=ship['direction'])
             _ship.save_to_db()
+
             ship_locations_are_correct = self._create_ship_locations(ship['x'], ship['y'], ship['size'],
-                                                                     ship['direction'])
+                                                                     ship['direction'], _ship.id)
             if not ship_locations_are_correct:
                 return False
+
+        ship_locations = ShipModel.query.get(1).locations
+        print(type(ship_locations))
+        print(ship_locations.__dict__)
         return True
 
-    def _create_ship_locations(self, origin_x, origin_y, size, orientation):
+    def _create_ship_locations(self, origin_x, origin_y, size, orientation, ship_id):
         if orientation == 'H':
             if size % 2 == 0:
                 for x in range(int(origin_x - (size + 1) // 2 + 1), int(origin_x + (size + 1) / 2 + 1)):
                     out_of_game_border = self._check_ship_locations_over_game_borders(x, origin_y)
                     if out_of_game_border:
                         return False
-                    location = BoardLocationModel(x, origin_y)
+                    location = BoardLocationModel(x, origin_y, ship_id)
                     location.save_to_db()
             else:
                 for x in range(int(origin_x - (size + 1) // 2 + 1), int(origin_x + (size + 1) / 2)):
                     out_of_game_border = self._check_ship_locations_over_game_borders(x, origin_y)
                     if out_of_game_border:
                         return False
-                    location = BoardLocationModel(x, origin_y)
+                    location = BoardLocationModel(x, origin_y, ship_id)
                     location.save_to_db()
         else:
             if size % 2 == 0:
@@ -46,14 +51,14 @@ class StartGameHandler:
                     out_of_game_border = self._check_ship_locations_over_game_borders(origin_x, y)
                     if out_of_game_border:
                         return False
-                    location = BoardLocationModel(origin_x, y)
+                    location = BoardLocationModel(origin_x, y, ship_id)
                     location.save_to_db()
             else:
                 for y in range(int(origin_y - (size + 1) // 2 + 1), int(origin_y + (size + 1) / 2)):
                     out_of_game_border = self._check_ship_locations_over_game_borders(origin_x, y)
                     if out_of_game_border:
                         return False
-                    location = BoardLocationModel(origin_x, y)
+                    location = BoardLocationModel(origin_x, y, ship_id)
                     location.save_to_db()
         return True
 
@@ -64,3 +69,4 @@ class StartGameHandler:
         locations = BoardLocationModel.query.all()
         locations_list = [location.get_co_ordinates() for location in locations]
         return len(locations_list) == len(set(locations_list))
+

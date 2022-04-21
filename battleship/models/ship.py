@@ -15,7 +15,7 @@ class ShipModel(db.Model):
 
     game_id = db.Column(db.Integer, db.ForeignKey('games.id'))
 
-    locations = db.relationship('BoardLocationModel', backref='ship', lazy='dynamic')
+    locations = db.relationship('BoardLocationModel', backref='ship')
 
     def __init__(self, name, origin_x, origin_y, size, orientation):
         self.name = name
@@ -28,8 +28,9 @@ class ShipModel(db.Model):
         return self.size
 
     def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
+        x = db.session.add(self)
+        v = db.session.commit()
+        print('cc')
 
     def delete_from_db(self):
         db.session.delete(self)

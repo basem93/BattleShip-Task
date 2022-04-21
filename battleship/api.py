@@ -5,12 +5,15 @@ from flask import Flask, jsonify, request
 # import battleship.controllers.end_game_handeler as end_game_handeler
 # import battleship.controllers.shot_handeler as shot_handeler
 
-
 app = Flask(__name__)
 
 from battleship.controllers.game_creator_handler import StartGameHandler
 from battleship.controllers.database_handler import delete_all_database_records
+from battleship.controllers.shot_handler import ShotHandler
 
+@app.route("/")
+def hello():
+    return "Welcome to BattleShip game."
 
 @app.route('/battleship', methods=['POST'])
 def create_battleship_game():
@@ -32,9 +35,32 @@ def create_battleship_game():
 
 @app.route('/battleship', methods=['PUT'])
 def shot():
-    return jsonify({}), HTTPStatus.NOT_IMPLEMENTED
+    request_data = request.get_json()
+    shot_handler = ShotHandler(request_data)
+
+    out_of_game_border = shot_handler.check_shot_location_over_game_borders(request_data['x'], request_data['y'])
+    if out_of_game_border:
+        return jsonify(message="shot falls outside of the board"), HTTPStatus.BAD_REQUEST
+
+    shot_location = shot_handler.get_shot()
+
+    # shot did not hit any ships locations
+    if not shot_location:
+        return jsonify(result="WATER"), HTTPStatus.OK
+
+    if shot_location.hit:
+        return jsonify(result="HIT"), HTTPStatus.OK
+
+    # if shot hit any ship, update hit locaton to True
+    shot_handler.update_shot()
+
+    if shot_handler.is_ship_sinked(shot_location.ship_id):
+        return jsonify(result="SINK"), HTTPStatus.OK
+    else:
+        return jsonify(result="HIT"), HTTPStatus.OK
 
 
 @app.route('/battleship', methods=['DELETE'])
 def delete_battleship_game():
-    return jsonify({}), HTTPStatus.NOT_IMPLEMENTED
+    delete_all_database_records()
+    return jsonify(message="Game deleted successfully"), HTTPStatus.OK
