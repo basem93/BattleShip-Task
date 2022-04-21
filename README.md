@@ -1,3 +1,11 @@
+
+Notes:
+1) To run the application, write:
+    $python app.py
+
+2) To run feature tests, write
+    $bolt ft
+
 # Battle Ship
 
 This repo is the start-up point to submit the battleship game exercise for
